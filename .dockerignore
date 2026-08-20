@@ -1,0 +1,6 @@
+.git
+.github
+.gitea
+**/bin
+**/obj
+publish
