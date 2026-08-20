@@ -1,5 +1,24 @@
 ﻿namespace SteamPrefill.CliCommands
 {
+    #region Prefill
+
+    public sealed class PlayedWithinDaysValidator : BindingValidator<int>
+    {
+        public override BindingValidationError Validate(int value)
+        {
+            if (value > 0)
+            {
+                return Ok();
+            }
+
+            AnsiConsole.MarkupLine(Red($"{White(value)} is not a valid value for {LightYellow("--played-within")}"));
+            AnsiConsole.Markup(Red("Please enter a value greater than 0"));
+            throw new CommandException(".", 1, true);
+        }
+    }
+
+    #endregion
+
     #region Operating system
 
     /// <summary>

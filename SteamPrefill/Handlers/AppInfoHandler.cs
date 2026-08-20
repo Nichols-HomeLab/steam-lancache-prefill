@@ -9,7 +9,7 @@
         private readonly Steam3Session _steam3Session;
         private readonly LicenseManager _licenseManager;
 
-        private List<CPlayer_GetOwnedGames_Response.Game> _recentlyPlayed;
+        private List<CPlayer_GetOwnedGames_Response.Game> _ownedGames;
 
         /// <summary>
         /// A dictionary of all app metadata currently retrieved from Steam
@@ -167,9 +167,34 @@
         /// </summary>
         public async Task<List<CPlayer_GetOwnedGames_Response.Game>> GetRecentlyPlayedGamesAsync()
         {
-            if (_recentlyPlayed != null)
+            return (await GetOwnedGamesAsync()).Where(e => e.playtime_2weeks > 0).ToList();
+        }
+
+        /// <summary>
+        /// Gets a list of games owned by the user that were last played within the specified number of days.
+        /// Games that have never been played are excluded.
+        /// </summary>
+        public async Task<List<CPlayer_GetOwnedGames_Response.Game>> GetGamesPlayedWithinDaysAsync(int days)
+        {
+            return FilterGamesPlayedWithinDays(await GetOwnedGamesAsync(), days, DateTimeOffset.UtcNow);
+        }
+
+        internal static List<CPlayer_GetOwnedGames_Response.Game> FilterGamesPlayedWithinDays(
+            IEnumerable<CPlayer_GetOwnedGames_Response.Game> games,
+            int days,
+            DateTimeOffset now)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(days);
+
+            var cutoff = now.AddDays(-days).ToUnixTimeSeconds();
+            return games.Where(game => game.rtime_last_played > 0 && game.rtime_last_played >= cutoff).ToList();
+        }
+
+        private async Task<List<CPlayer_GetOwnedGames_Response.Game>> GetOwnedGamesAsync()
+        {
+            if (_ownedGames != null)
             {
-                return _recentlyPlayed;
+                return _ownedGames;
             }
 
             var request = new CPlayer_GetOwnedGames_Request
@@ -186,8 +211,8 @@
                 throw new Exception("Unexpected error while requesting owned games!");
             }
 
-            _recentlyPlayed = response.Body.games.Where(e => e.playtime_2weeks > 0).ToList();
-            return _recentlyPlayed;
+            _ownedGames = response.Body.games.ToList();
+            return _ownedGames;
         }
 
 

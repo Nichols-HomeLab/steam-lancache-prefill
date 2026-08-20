@@ -13,6 +13,11 @@ namespace SteamPrefill.CliCommands
         [CommandOption("recent", Description = "Prefill will include all games played in the last 2 weeks.")]
         public bool PrefillRecentGames { get; init; }
 
+        [CommandOption("played-within",
+            Description = "Prefill will include all games last played within the specified number of days.",
+            Validators = new[] { typeof(PlayedWithinDaysValidator) })]
+        public int? PlayedWithinDays { get; init; }
+
         [CommandOption("recently-purchased", Description = "Prefill will include all games purchased in the last 30 days.")]
         public bool PrefillRecentlyPurchased { get; init; }
 
@@ -77,6 +82,7 @@ namespace SteamPrefill.CliCommands
                 await steamManager.InitializeAsync();
                 await steamManager.DownloadMultipleAppsAsync(DownloadAllOwnedGames,
                                                              PrefillRecentGames,
+                                                             PlayedWithinDays,
                                                              PrefillPopularGamesCount,
                                                              PrefillRecentlyPurchased);
             }
@@ -91,7 +97,7 @@ namespace SteamPrefill.CliCommands
         {
             var userSelectedApps = steamManager.LoadPreviouslySelectedApps();
 
-            if ((DownloadAllOwnedGames) || (PrefillRecentGames) || (PrefillRecentlyPurchased) || PrefillPopularGamesCount != null || userSelectedApps.Any())
+            if (DownloadAllOwnedGames || PrefillRecentGames || PlayedWithinDays != null || PrefillRecentlyPurchased || PrefillPopularGamesCount != null || userSelectedApps.Any())
             {
                 return;
             }
@@ -99,7 +105,7 @@ namespace SteamPrefill.CliCommands
             _ansiConsole.MarkupLine(Red("No apps have been selected for prefill! At least 1 app is required!"));
             _ansiConsole.MarkupLine(Red($"Use the {Cyan("select-apps")} command to interactively choose which apps to prefill. "));
             _ansiConsole.MarkupLine("");
-            _ansiConsole.Markup(Red($"Alternatively, the flags {LightYellow("--all")}, {LightYellow("--recent")}, {LightYellow("--recently-purchased")}, or {LightYellow("--top")} can be specified."));
+            _ansiConsole.Markup(Red($"Alternatively, the flags {LightYellow("--all")}, {LightYellow("--recent")}, {LightYellow("--played-within")}, {LightYellow("--recently-purchased")}, or {LightYellow("--top")} can be specified."));
             throw new CommandException(".", 1, true);
         }
 

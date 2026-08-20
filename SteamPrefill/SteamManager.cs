@@ -69,12 +69,14 @@
         /// </summary>
         /// <param name="downloadAllOwnedGames">If set to true, all games owned by the user will be downloaded</param>
         /// <param name="prefillRecentGames">If set to true, games played in the last 2 weeks will be downloaded</param>
+        /// <param name="playedWithinDays">If set, games last played within the specified number of days will be downloaded</param>
         /// <param name="prefillPopularGames">If set to a value > 0, the most popular N games will be downloaded</param>
         /// <param name="prefillRecentlyPurchasedGames">If set to true, games purchased in the last 30 days will be downloaded</param>
         public async Task DownloadMultipleAppsAsync(bool downloadAllOwnedGames, bool prefillRecentGames,
-                                                    int? prefillPopularGames, bool prefillRecentlyPurchasedGames)
+                                                    int? playedWithinDays, int? prefillPopularGames, bool prefillRecentlyPurchasedGames)
         {
-            var appIdsToDownload = await BuildAppIdDownloadListAsync(downloadAllOwnedGames, prefillRecentGames, prefillPopularGames, prefillRecentlyPurchasedGames);
+            var appIdsToDownload = await BuildAppIdDownloadListAsync(downloadAllOwnedGames, prefillRecentGames, playedWithinDays,
+                                                                     prefillPopularGames, prefillRecentlyPurchasedGames);
 
             // AppIds can potentially be added twice when building out the full list of ids
             var distinctAppIds = appIdsToDownload.Distinct().ToList();
@@ -113,10 +115,11 @@
 
         /// <param name="downloadAllOwnedGames">If set to true, all games owned by the user will be downloaded</param>
         /// <param name="prefillRecentGames">If set to true, games played in the last 2 weeks will be downloaded</param>
+        /// <param name="playedWithinDays">If set, games last played within the specified number of days will be downloaded</param>
         /// <param name="prefillPopularGames">If set to a value > 0, the most popular N games will be downloaded</param>
         /// <param name="prefillRecentlyPurchasedGames">If set to true, games purchased in the last 30 days will be downloaded</param>
-        private async Task<List<uint>> BuildAppIdDownloadListAsync(bool downloadAllOwnedGames, bool prefillRecentGames, int? prefillPopularGames,
-                                                                   bool prefillRecentlyPurchasedGames)
+        private async Task<List<uint>> BuildAppIdDownloadListAsync(bool downloadAllOwnedGames, bool prefillRecentGames, int? playedWithinDays,
+                                                                   int? prefillPopularGames, bool prefillRecentlyPurchasedGames)
         {
             // Always including selected apps
             var appIdsToDownload = LoadPreviouslySelectedApps();
@@ -145,6 +148,27 @@
                         continue;
                     }
                     _ansiConsole.LogMarkupVerbose($"  {Green(appInfo.Name).PadRight(50)} Purchased: {LightYellow(appInfo.PurchaseDate.Value.ToLocalTime().ToString("yyyy-MM-dd"))}");
+                }
+            }
+
+            if (playedWithinDays.HasValue)
+            {
+                var games = await _appInfoHandler.GetGamesPlayedWithinDaysAsync(playedWithinDays.Value);
+                var appIds = games.Select(game => (uint)game.appid).ToList();
+                appIdsToDownload.AddRange(appIds);
+
+                await _appInfoHandler.RetrieveAppMetadataAsync(appIds);
+                _ansiConsole.LogMarkupVerbose($"[bold yellow]Games played within the last {playedWithinDays.Value} days:[/]");
+                foreach (var game in games)
+                {
+                    var appInfo = await _appInfoHandler.GetAppInfoAsync((uint)game.appid);
+                    if (appInfo.Type != AppType.Game)
+                    {
+                        continue;
+                    }
+
+                    var lastPlayed = DateTimeOffset.FromUnixTimeSeconds(game.rtime_last_played).ToLocalTime();
+                    _ansiConsole.LogMarkupVerbose($"  {Green(appInfo.Name).PadRight(50)} Last played: {LightYellow(lastPlayed.ToString("yyyy-MM-dd"))}");
                 }
             }
 
