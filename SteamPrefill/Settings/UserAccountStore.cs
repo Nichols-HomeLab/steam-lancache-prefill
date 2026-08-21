@@ -62,6 +62,11 @@ namespace SteamPrefill.Settings
             return tokenHasExpired;
         }
 
+        public void SetUsername(string username)
+        {
+            CurrentUsername = username;
+        }
+
         private async Task<string> PromptForUsernameAsync(IAnsiConsole ansiConsole)
         {
             return await Task.Run(() =>

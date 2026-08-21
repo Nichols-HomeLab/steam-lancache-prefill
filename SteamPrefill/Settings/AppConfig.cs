@@ -94,6 +94,11 @@ namespace SteamPrefill.Settings
 
         public static int? MaxConcurrencyOverride { get; set; }
 
+        /// <summary>
+        /// Uses Steam's QR authentication flow for the initial persistent login.
+        /// </summary>
+        public static bool UseQrLogin { get; set; }
+
         #endregion
     }
 }
