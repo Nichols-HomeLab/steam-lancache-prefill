@@ -70,7 +70,7 @@
     <PackageReference Include="QRCoder" Version="1.8.0" />
     <PackageReference Include="Spectre.Console" Version="0.51.1" />
     <PackageReference Include="SteamKit2" Version="3.4.0" Publicize="true" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.34.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.7.3" />
     <PackageReference Include="ThisAssembly.AssemblyInfo" Version="1.2.14">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
