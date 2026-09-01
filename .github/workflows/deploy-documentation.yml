@@ -10,7 +10,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     container:
-      image: python:3.11
+      image: python:3.14
     steps:
       - uses: actions/checkout@v2
       - run: git config --global --add safe.directory "*";
