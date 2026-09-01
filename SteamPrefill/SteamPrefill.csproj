@@ -101,7 +101,7 @@
     <!-- Required definitions in order for Microsoft.CodeAnalysis.BannedApiAnalyzers to work -->
     <AdditionalFiles Include="..\LancachePrefill.Common\BannedSymbols.txt" Link="Properties\BannedSymbols.txt" />
 
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="16.9.60">
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="16.10.56">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
