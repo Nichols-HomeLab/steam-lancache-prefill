@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0.100-jammy@sha256:7aacf0debfa3c612176a76c7d0be817e588b7cb5ca8f74e20484bb66e6ef1f79 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0.424-jammy@sha256:ac2731ba829691dddf6b059833afa68381e0336bf1db69404ee3d6eec0495cf4 AS build
 
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1 \
     DOTNET_NOLOGO=1
@@ -12,7 +12,7 @@ RUN dotnet publish SteamPrefill/SteamPrefill.csproj \
         --self-contained true \
         --output /publish
 
-FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy@sha256:1422dbc17068097666cc3454ca2f2b43aa143ef858da9784188cf5f605ae20ae
+FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy@sha256:6203db84c049a941b35df93cbac7839efd2bc1f04951b3cbae07fa485ad3543b
 
 LABEL org.opencontainers.image.source="https://git.nicholstech.org/Nichols-HomeLab/steam-lancache-prefill"
 
