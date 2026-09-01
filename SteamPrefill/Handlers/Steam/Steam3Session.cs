@@ -1,5 +1,7 @@
 namespace SteamPrefill.Handlers.Steam
 {
+    using QRCoder;
+
     public sealed class Steam3Session : IDisposable
     {
         /// <summary>
@@ -147,17 +149,37 @@ namespace SteamPrefill.Handlers.Steam
 
             _ansiConsole.LogMarkupLine("Requesting new access token...");
 
-            // Begin authenticating via credentials
-            var authSession = await _steamClient.Authentication.BeginAuthSessionViaCredentialsAsync(new AuthSessionDetails
+            AuthPollResult pollResponse;
+            if (AppConfig.UseQrLogin)
             {
-                Username = _logonDetails.Username,
-                Password = _logonDetails.Password,
-                IsPersistentSession = true,
-                Authenticator = new UserConsoleAuthenticator()
-            });
+                var authSession = await _steamClient.Authentication.BeginAuthSessionViaQRAsync(new AuthSessionDetails
+                {
+                    DeviceFriendlyName = nameof(SteamPrefill),
+                    IsPersistentSession = true
+                });
 
-            // Starting polling Steam for authentication response
-            var pollResponse = await authSession.PollingWaitForResultAsync();
+                authSession.ChallengeURLChanged = () => DisplayQrCode(authSession.ChallengeURL);
+                DisplayQrCode(authSession.ChallengeURL);
+                pollResponse = await authSession.PollingWaitForResultAsync();
+
+                _logonDetails.Username = pollResponse.AccountName;
+                _userAccountStore.SetUsername(pollResponse.AccountName);
+            }
+            else
+            {
+                // Begin authenticating via credentials
+                var authSession = await _steamClient.Authentication.BeginAuthSessionViaCredentialsAsync(new AuthSessionDetails
+                {
+                    Username = _logonDetails.Username,
+                    Password = _logonDetails.Password,
+                    IsPersistentSession = true,
+                    Authenticator = new UserConsoleAuthenticator()
+                });
+
+                // Starting polling Steam for authentication response
+                pollResponse = await authSession.PollingWaitForResultAsync();
+            }
+
             _userAccountStore.AccessToken = pollResponse.RefreshToken;
             _userAccountStore.Save();
 
@@ -168,15 +190,32 @@ namespace SteamPrefill.Handlers.Steam
 
         private async Task ConfigureLoginDetailsAsync()
         {
-            var username = await _userAccountStore.GetUsernameAsync(_ansiConsole);
+            var accessTokenIsValid = _userAccountStore.AccessTokenIsValid();
+            var username = AppConfig.UseQrLogin && !accessTokenIsValid
+                ? null
+                : await _userAccountStore.GetUsernameAsync(_ansiConsole);
 
             _logonDetails = new SteamUser.LogOnDetails
             {
                 Username = username,
                 ShouldRememberPassword = true,
-                Password = _userAccountStore.AccessTokenIsValid() ? null : await _ansiConsole.ReadPasswordAsync(),
+                Password = accessTokenIsValid || AppConfig.UseQrLogin ? null : await _ansiConsole.ReadPasswordAsync(),
                 LoginID = _userAccountStore.SessionId
             };
+        }
+
+        private void DisplayQrCode(string challengeUrl)
+        {
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrCodeData = qrGenerator.CreateQrCode(challengeUrl, QRCodeGenerator.ECCLevel.L);
+            using var qrCode = new AsciiQRCode(qrCodeData);
+
+            _ansiConsole.WriteLine();
+            _ansiConsole.MarkupLine($"Use the {Cyan("Steam Mobile App")} to scan and approve this login:");
+            foreach (var line in qrCode.GetLineByLineGraphic(1, drawQuietZones: true))
+            {
+                _ansiConsole.WriteLine(line);
+            }
         }
 
         #region  Connecting to Steam

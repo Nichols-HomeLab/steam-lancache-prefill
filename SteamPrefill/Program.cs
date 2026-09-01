@@ -121,8 +121,15 @@ namespace SteamPrefill
                 args.Remove(count);
             }
 
+            // Uses Steam mobile approval instead of username/password for the initial login.
+            if (args.Remove("--qr-login"))
+            {
+                AnsiConsole.Console.LogMarkupLine($"Using {LightYellow("--qr-login")} flag.  Authenticate with the Steam Mobile App...");
+                AppConfig.UseQrLogin = true;
+            }
+
             // Adding some formatting to logging to make it more readable + clear that these flags are enabled
-            if (AppConfig.DebugLogs || AppConfig.SkipDownloads || AppConfig.NoLocalCache)
+            if (AppConfig.DebugLogs || AppConfig.SkipDownloads || AppConfig.NoLocalCache || AppConfig.UseQrLogin)
             {
                 AnsiConsole.Console.WriteLine();
                 AnsiConsole.Console.Write(new Rule());
