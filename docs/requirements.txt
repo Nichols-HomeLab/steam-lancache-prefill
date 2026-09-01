@@ -1,5 +1,5 @@
 pathspec
-mkdocs == 1.4.2
+mkdocs ==1.6.1
 mkdocs-awesome-pages-plugin
 mkdocs-static-i18n
 mkdocs-macros-plugin
