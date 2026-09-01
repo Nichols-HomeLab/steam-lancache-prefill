@@ -68,13 +68,13 @@ plugins:
   # https://github.com/ultrabug/mkdocs-static-i18n
   # Icons taken from - https://github.com/lipis/flag-icons
   - i18n:
-      default_language: en
       docs_structure: suffix
       languages:
-        en:
+        - locale: en
           name: English
+          default: true
           build: true
-        gr:
+        - locale: el
           name: Ελληνικά
           build: true
   # Allows global variables - https://github.com/fralau/mkdocs_macros_plugin
