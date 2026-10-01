@@ -68,7 +68,7 @@
     <PackageReference Include="Intellenum" Version="2.0.1" />
     <PackageReference Include="protobuf-net" Version="3.4.21" />
     <PackageReference Include="QRCoder" Version="1.8.0" />
-    <PackageReference Include="Spectre.Console" Version="0.51.1" />
+    <PackageReference Include="Spectre.Console" Version="0.57.2" />
     <PackageReference Include="SteamKit2" Version="3.4.0" Publicize="true" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.7.3" />
     <PackageReference Include="ThisAssembly.AssemblyInfo" Version="1.4.3">
